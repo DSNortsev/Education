@@ -1,7 +1,5 @@
 # TAS1:Remove species column from data set
 short_data <- iris[,-5]
-short_data
-
 head(short_data)
 
 # View structure of dataet
@@ -26,11 +24,14 @@ head(short_data)
 
 # TASK2: Aplly k-means algorithm with no. of clusters=3
 result<- kmeans(short_data,3)
+result
 
 # Task3: Append the cluster number to each row of data (Short-Data).
 short_data <- cbind(short_data, result$cluster)
+head(short_data)
 # Task4: Display the aggregate data (Short-Data) with cluster number.
 short_data_mean <- aggregate(short_data,by=list(result$cluster),FUN=mean)
+head(short_data_mean)
 # Task5: Calculate “within group sum of the squares” for the above clustering
 # Sum of squares for Sepal.Length:
 Sepal.Length_1_mean <- (short_data$Sepal.Length - short_data_mean$Sepal.Length[short_data_mean$`result$cluster` == 1])^2
