@@ -8,6 +8,7 @@ DROP SCHEMA IF EXISTS hw1_task1 CASCADE;
 CREATE SCHEMA hw1_task1;
 SET client_encoding = 'UTF8';
 SET search_path TO hw1_task1;
+SET DATESTYLE TO US;
 
 -- TABLES
 
@@ -56,8 +57,8 @@ CREATE TABLE orders (
 
 CREATE TABLE items (
     id serial PRIMARY KEY,
-    name varchar(30) NOT NULL,
-    price int NOT NULL
+    name varchar(30) NOT NULL UNIQUE,
+    price numeric(10,2) NOT NULL
 );
 
 
@@ -261,38 +262,85 @@ INSERT INTO xmldata (documents) VALUES (
 CREATE FUNCTION xmlparser() RETURNS void AS $$
 DECLARE
         customer xml;
+        contact xml;
+        "order" xml;
+        item xml;
+        customer_id int;
 	name varchar(30);
         "number" int;
         street varchar(30);
         city varchar(15);
         country varchar(15);
-        email varchar(30);
-        phone varchar(15);
-        secretary varchar(15);
+        contact_name varchar(30);
+        contact_phone varchar(30);
+        contact_email varchar(30);
+        contact_type varchar(30);
+        contact_type_id int;
+        contact_info varchar(30);
+        order_id int;
+        order_date date;
+        order_ship_by date;
+        order_discount int;
+        item_id int;
+        item_name varchar(30);
+        item_quantity int;
+        item_price numeric(10,2);
+
 BEGIN 
        -- myxml := (SELECT unnest(xpath('/Customers/Customer',(SELECT documents
        --                                                      FROM hw1_task1.xmldata
        --                                                    LIMIT 1))));
        
        FOR customer IN (select unnest(xpath('/Customers/Customer',(select documents from hw1_task1.xmldata LIMIT 1)))) LOOP
+           --  Get customer information
            name := (SELECT (xpath('//Name/text()', customer))[1]::text);
            "number" := (SELECT (xpath('//Address/Street/@number', customer))[1]::text);
            street := (SELECT (xpath('//Address/Street/text()', customer))[1]::text);
            city := (SELECT (xpath('//Address/City/text()', customer))[1]::text);
            country := (SELECT (xpath('//Address/Country/text()', customer))[1]::text);
+
+           INSERT INTO customers (name, "number", street, city, country) VALUES (name, "number", street, city, country);
+           -- Get customer primary key 
+           customer_id := (SELECT currval(pg_get_serial_sequence('customers','id'))); 
           
-           INSERT INTO customers (name, "number", street, city, country) VALUES 
-           (name, "number", street, city, country); 
-           RAISE NOTICE '%', name;
-           RAISE NOTICE '%', "number";
-           RAISE NOTICE '%', street;
-           RAISE NOTICE '%', city;
-           RAISE NOTICE '%', country;
+           -- Add customer personal contact information   
+           FOR contact_type IN (SELECT ct.name FROM contact_types as ct) LOOP
+               contact_info := (SELECT (xpath('//Address/' || contact_type || '/text()', customer))[1]::text);
+               IF contact_info IS NOT NULL THEN
+                    contact_type_id := (SELECT ct.id FROM contact_types as ct WHERE ct.name = contact_type);
+                    INSERT INTO customer_personal_contacts (customer_id, contact_types_id,contact_info)
+                    VALUES (customer_id, contact_type_id, contact_info); 
+               END IF;
+           END LOOP;           
+
+          FOR contact IN (select unnest((xpath('//Contacts/Contact', customer)))) LOOP
+               -- Get cusotmer contact info
+               contact_name := (SELECT (xpath('//Contact//Name/text()', contact))[1]::text);
+               contact_phone := (SELECT (xpath('//Contact/Phone/text()', contact))[1]::text);
+               contact_email := (SELECT (xpath('//Contact/email/text()', contact))[1]::text);
+               INSERT INTO customer_contacts (customer_id, name, phone, email)
+               VALUES (customer_id, contact_name, contact_phone, contact_email);
+          END LOOP;
     
-
-    
-
-
+          FOR "order" IN (select unnest((xpath('//Orders/order', customer)))) LOOP
+               -- Get order information for customer
+               order_date := (SELECT (xpath('//order/date/text()', "order"))[1]::text);
+               order_ship_by := (SELECT (xpath('//order/ship-by/text()', "order"))[1]::text);
+               order_discount := (SELECT (xpath('//order/discount/text()', "order"))[1]::text);
+               INSERT INTO orders (customer_id, order_date, ship_by, discount)
+               VALUES (customer_id, order_date, order_ship_by, order_discount);
+               order_id := (SELECT currval(pg_get_serial_sequence('orders','id')));
+               FOR item IN (select unnest((xpath('//items/item', "order")))) LOOP
+                   -- Insert item information
+                   item_name := (SELECT (xpath('//item/name/text()', item))[1]::text);
+                   item_quantity := (SELECT (xpath('//item/quantity/text()', item))[1]::text);
+                   item_price := REPLACE((SELECT (xpath('//item/price/text()', item))[1]::text), ',','');
+                   INSERT INTO items (name, price) VALUES (item_name, item_price);
+                   item_id := (SELECT currval(pg_get_serial_sequence('items','id')));
+                   -- Insert order details
+                   INSERT INTO order_details (order_id, items_id, quantity) VALUES (order_id, item_id, item_quantity);
+               END LOOP;
+          END LOOP;
     
        END LOOP;
       
