@@ -350,3 +350,112 @@ $$
 LANGUAGE plpgsql;
 
 SELECT xmlparser();
+
+
+
+-- TASK3. Create a table with an id and an XMLType column, and write a query over the plain relational database
+-- that will generate the data in XML format to populate this database.
+
+-- !!! NOTES: I have create four table where I have stored part of xml messages, but I didn't figure out how easily I can merge them 
+CREATE TABLE customer_info_xml AS
+SELECT c.id as customer_id, (xmlelement(name "Customer", xmlelement(name "Name", c.name),
+                                    xmlelement(name "Address", xmlelement(name "Street", xmlattributes(c.number as number),c.street),
+                                                                xmlelement(name "City", c.city),
+                                                                xmlelement(name "Country", c.country),
+                                                                xmlelement(name "email", cps.contact_info)
+                                                                  )
+ --                                   xmlelement(name "Contacts", xmlelement(name "Contact", xmlforest(cc.name as "Name",
+ --                                                                                                    cc.phone as "Phone",
+  --                                                                                                   cc.email as "Email")))                                     
+)) AS xml
+FROM customers as c, contact_types as ct, customer_personal_contacts as cps
+WHERE ct.id = cps.contact_types_id AND c.id = cps.customer_id;
+
+
+CREATE TABLE customer_contact_xml AS 
+SELECT cc.customer_id as customer_id, (xmlelement(name "Contacts",xmlagg(xmlelement(name "Customer",xmlforest(cc.name as "Name", cc.phone as "Phone", cc.email as "Email"))))) AS xml 
+FROM customers as c, customer_contacts as cc
+WHERE c.id = cc.customer_id
+GROUP BY cc.customer_id;
+
+CREATE TABLE customer_order_xml AS
+SELECT o.customer_id as customer_id, (xmlelement(name "Orders",xmlagg(xmlelement(name "order",xmlforest(o.order_date as "date", o.ship_by as "ship_by", o.discount as "discount"))))) AS xml
+
+--SELECT *
+FROM orders as o
+GROUP BY o.customer_id
+ORDER BY o.customer_id;
+
+CREATE TABLE customer_item_xml AS
+SELECT o.customer_id as customer_id, o.id as order_id, (xmlelement(name "Items",xmlagg(xmlelement(name "item", xmlforest(i.name as "name", od.quantity as "quantity", i.price as "price"))))) AS xml
+FROM orders as o, items as i, order_details as od
+WHERE o.id = od.order_id AND i.id = items_id 
+GROUP BY o.customer_id, o.id
+ORDER BY o.id;
+
+-- SELECT * FROM customer_info_xml;
+-- SELECT * FROM customer_contact_xml;
+-- SELECT * FROM customer_order_xml;
+-- SELECT * FROM customer_item_xml;
+
+CREATE TABLE customers_xml (
+    id serial PRIMARY KEY,
+    customer_details xml
+);
+
+CREATE FUNCTION insert_xml() RETURNS void AS $$
+DECLARE
+        customer xml;
+BEGIN 
+       FOR customer IN (select unnest(xpath('/Customers/Customer',(select documents from hw1_task1.xmldata LIMIT 1)))) LOOP
+           -- Insert customers info 
+           INSERT INTO customers_xml (customer_details) VALUES (customer);
+       END LOOP;
+      
+RETURN;
+END;
+$$
+LANGUAGE plpgsql;
+
+SELECT insert_xml();
+
+-- TASK4: 4. On each one of these databases, write and run the following queries:
+-- (a) List the names of customers who have placed an order with an item that has quantity > 2.
+
+-- Plain Relationa tables
+SELECT name 
+FROM order_details as od, orders as o, customers as c 
+WHERE od.order_id = o.id AND c.id = o.customer_id and od.quantity = 4;
+-- (b) List the names of customers who have placed an order where all the items in the order have
+-- quantity > 2.
+
+-- Plain relational tables
+SELECT DISTINCT c.name 
+FROM (SELECT t1.customer_id 
+      FROM (SELECT o.customer_id as customer_id, o.id as order_id, count(od.quantity) 
+            FROM orders as o, order_details as od 
+            WHERE od.order_id = o.id
+            GROUP BY o.customer_id, o.id
+            ORDER BY o.customer_id) as t1,
+            (SELECT order_id, count(quantity) 
+             FROM order_details as od 
+             WHERE quantity > 2 
+             GROUP BY od.order_id
+              ORDER BY od.order_id) as t2 
+     WHERE t1.order_id = t2.order_id and t1.count = t2.count) as t1, customers as c
+ WHERE t1.customer_id = c.id;
+
+-- (c) List the customers who have placed the most expensive order (to nd the cost of an order, you
+-- need to add up the cost of all items; the cost of each item is the price of that item times the
+-- quantity).
+
+--Plain Relational tables
+SELECT c.name FROM (SELECT t1.order_id, sum(t1.total) as total 
+                    FROM (SELECT od.order_id,  sum(od.quantity* i.price) as total
+			  FROM order_details as od, items as i 
+			  WHERE od.items_id = i.id 
+                          GROUP BY od.order_id, od.items_id
+                          ORDER BY od.order_id) as t1
+                    GROUP BY order_id 
+                    ORDER BY total DESC LIMIT 1) as t1, orders as o, customers as c
+WHERE t1.order_id = o.id AND c.id = o.customer_id;
