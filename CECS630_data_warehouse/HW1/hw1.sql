@@ -572,3 +572,16 @@ SELECT c.name FROM (SELECT t1.order_id, sum(t1.total) as total
                     GROUP BY order_id 
                     ORDER BY total DESC LIMIT 1) as t1, orders as o, customers as c
 WHERE t1.order_id = o.id AND c.id = o.customer_id;
+
+-- Extended relational database
+
+WITH tmp as (SELECT name, id, ((unnest(items)).price)::int, ((unnest(items)).quantity)::int
+             FROM (SELECT name, (unnest(orders)).id, ((unnest(orders)).items)
+                   FROM customers_task2 ORDER BY id) AS o1)
+
+
+SELECT name, id,  sum(price*quantity) AS total
+FROM tmp
+GROUP BY name, id
+ORDER BY total DESC
+LIMIT 1;
