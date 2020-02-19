@@ -351,6 +351,64 @@ LANGUAGE plpgsql;
 
 SELECT xmlparser();
 
+-- TASK2. create a schema for this data in an extended relational database, using only one (typed) table (you
+-- can have several types, and collections, but all data should go in one single table). Populate the table
+-- with the data in the file.
+
+CREATE TABLE personal_contact_info_task2 (
+    contact_type varchar(15) NOT NULL,
+    contact_info varchar(30) NOT NULL,
+    PRIMARY KEY (contact_type, contact_info)
+);
+
+
+CREATE TABLE address_task2 (
+    "number" varchar(20) NOT NULL,
+     street varchar(50) NOT NULL,
+     city varchar(30) NOT NULL,
+     country varchar(15) NOT NULL,
+     contact_info personal_contact_info_task2 NOT NULL
+);
+
+
+CREATE TABLE contacts_task2 (
+    name varchar(30) NOT NULL,
+    phone varchar(15) NOT NULL,
+    email varchar(30) NOT NULL
+);
+
+
+CREATE TABLE items_task2 (
+    name varchar(30) NOT NULL UNIQUE,
+    quantity INT NOT NULL,
+    price numeric(10,2) NOT NULL,
+    PRIMARY KEY (name, quantity, price)
+);
+
+
+CREATE TABLE orders_task2 (
+    order_date date NOT NULL,
+    ship_by date NOT NULL, 
+    discount int NOT NULL,
+    items items_task2[] NOT NULL 
+);
+
+
+CREATE TABLE customers_task2 (
+    id serial PRIMARY KEY,
+    name varchar(30) NOT NULL,
+    address address_task2 NOT NULL,
+    contacts contacts_task2[] NOT NULL,
+    orders orders_task2[] NOT NULL 
+);
+
+-- INSERT INTO contact_types_task2 (name) VALUES ('email'), ('phone'), ('secretary');
+INSERT INTO customers_task2 (name, address, contacts, orders) VALUES
+('Peter Gabriel', 
+ROW(123, 'Main Street', 'Lousville', 'USA', ROW('email', 'pgabriel@genesis.com')),
+ARRAY [ROW('Phil Collins', '502-505-5555', 'pcollins@genesis.com')::contacts_task2, ROW('Tony Banks', '502-555-5556', 'tbanks@genesis.com')::contacts_task2],
+ARRAY [ROW('1/20/2020', '2/20/2020', 5 , ARRAY [ROW('Drum set', 1, 1100)::items_task2, ROW('Cymbal', 3, 280)::items_task2,  ROW('Synthetiser', 3, 280)::items_task2])::orders_task2,
+ROW('1/30/2020 ', '2/25/2020', 4 ,  ARRAY [ROW('Piano', 1, 5000)::items_task2, ROW('Keyboard', 3, 1500)::items_task2,  ROW('Organ', 1, 2500)::items_task2])::orders_task2]);
 
 
 -- TASK3. Create a table with an id and an XMLType column, and write a query over the plain relational database
