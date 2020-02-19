@@ -505,6 +505,15 @@ FROM (SELECT name, (unnest((unnest(orders)).items)).quantity
       FROM customers_task2) AS t
 WHERE t.quantity > 2;
 
+-- XMLTYPE
+WITH tmp as (SELECT *
+             FROM (SELECT (xpath('//Customer/Name/text()', customer_details))[1]::text AS NAME, unnest((xpath('//quantity/text()', customer_details))::text[]::int[]) AS quantity
+                   FROM customers_xml) as o1)
+
+SELECT DISTINCT name
+FROM tmp
+WHERE quantity > 2;
+
 -- (b) List the names of customers who have placed an order where all the items in the order have
 -- quantity > 2.
 
