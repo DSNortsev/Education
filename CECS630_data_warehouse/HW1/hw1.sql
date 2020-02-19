@@ -387,6 +387,7 @@ CREATE TABLE items_task2 (
 
 
 CREATE TABLE orders_task2 (
+    id serial PRIMARY KEY,
     order_date date NOT NULL,
     ship_by date NOT NULL, 
     discount int NOT NULL,
@@ -405,10 +406,23 @@ CREATE TABLE customers_task2 (
 -- INSERT INTO contact_types_task2 (name) VALUES ('email'), ('phone'), ('secretary');
 INSERT INTO customers_task2 (name, address, contacts, orders) VALUES
 ('Peter Gabriel', 
-ROW(123, 'Main Street', 'Lousville', 'USA', ROW('email', 'pgabriel@genesis.com')),
+ROW(123, 'Main Street', 'Lousville', 'USA', ROW('email', 'pgabriel@genesis.com')::personal_contact_info_task2)::address_task2,
 ARRAY [ROW('Phil Collins', '502-505-5555', 'pcollins@genesis.com')::contacts_task2, ROW('Tony Banks', '502-555-5556', 'tbanks@genesis.com')::contacts_task2],
-ARRAY [ROW('1/20/2020', '2/20/2020', 5 , ARRAY [ROW('Drum set', 1, 1100)::items_task2, ROW('Cymbal', 3, 280)::items_task2,  ROW('Synthetiser', 3, 280)::items_task2])::orders_task2,
-ROW('1/30/2020 ', '2/25/2020', 4 ,  ARRAY [ROW('Piano', 1, 5000)::items_task2, ROW('Keyboard', 3, 1500)::items_task2,  ROW('Organ', 1, 2500)::items_task2])::orders_task2]);
+ARRAY [ROW(1,'1/20/2020', '2/20/2020', 5 , ARRAY [ROW('Drum set', 1, 1100)::items_task2, ROW('Cymbal', 3, 280)::items_task2,  ROW('Synthetiser', 2, 280)::items_task2])::orders_task2,
+ROW(2,'1/30/2020 ', '2/25/2020', 4 ,  ARRAY [ROW('Piano', 1, 5000)::items_task2, ROW('Keyboard', 3, 1500)::items_task2,  ROW('Organ', 1, 2500)::items_task2])::orders_task2]);
+INSERT INTO customers_task2 (name, address, contacts, orders) VALUES
+('Anthony Phillips', 
+ROW(232, 'Sesame Street', 'Lousville', 'USA', ROW('phone', '502-502-5002')::personal_contact_info_task2)::address_task2,
+ARRAY [ROW('Mike Rutherford', '502-505-5557', 'mrutherford@genesis.com')::contacts_task2],
+ARRAY [ROW(3,'1/15/2020', '2/25/2020', 3 , ARRAY [ROW('Electric Guitar', 4, 1800)::items_task2, ROW('Acoustic Guitar', 2, 3000)::items_task2,  ROW('Pick', 50, 1.10)::items_task2])::orders_task2,
+ROW(4,'2/1/2020', '4/1/2020', 4 ,  ARRAY [ROW('Strap', 10, 150)::items_task2, ROW('Tuner', 1, 300)::items_task2])::orders_task2]);
+INSERT INTO customers_task2 (name, address, contacts, orders) VALUES
+('Ray Wilson', 
+ROW(123, 'Nowhere Street', 'London', 'UK', ROW('secretary', 'Jonathan King')::personal_contact_info_task2)::address_task2,
+ARRAY [ROW('Steve Hacket', '502-505-5558', 'shacket@genesis.com')::contacts_task2],
+ARRAY [ROW(5,'11/20/2019', '12/20/2019', 8 , ARRAY [ROW('Case', 12, 25)::items_task2, ROW('Amplifier', 10, 1400)::items_task2])::orders_task2,
+ROW(6,'10/5/2019', '11/15/2019', 2 ,  ARRAY [ROW('Electric Bass', 4, 1600)::items_task2, ROW('Microphone', 10, 500)::items_task2])::orders_task2]);
+
 
 
 -- TASK3. Create a table with an id and an XMLType column, and write a query over the plain relational database
@@ -481,9 +495,16 @@ SELECT insert_xml();
 -- (a) List the names of customers who have placed an order with an item that has quantity > 2.
 
 -- Plain Relationa tables
-SELECT name 
+SELECT DISTINCT name 
 FROM order_details as od, orders as o, customers as c 
-WHERE od.order_id = o.id AND c.id = o.customer_id and od.quantity = 4;
+WHERE od.order_id = o.id AND c.id = o.customer_id and od.quantity > 2;
+
+-- Extended relational database
+SELECT DISTINCT name
+FROM (SELECT name, (unnest((unnest(orders)).items)).quantity
+      FROM customers_task2) AS t
+WHERE t.quantity > 2;
+
 -- (b) List the names of customers who have placed an order where all the items in the order have
 -- quantity > 2.
 
@@ -502,6 +523,40 @@ FROM (SELECT t1.customer_id
               ORDER BY od.order_id) as t2 
      WHERE t1.order_id = t2.order_id and t1.count = t2.count) as t1, customers as c
  WHERE t1.customer_id = c.id;
+
+-- Extended relational database
+
+WITH tmp AS (SELECT t1.name, t1.id, ((unnest(t1.items)).quantity)::int
+             FROM (SELECT name, (unnest(orders)).id, ((unnest(orders)).items)
+                   FROM customers_task2 ORDER BY id) as t1)
+SELECT DISTINCT t2.name 
+FROM (SELECT name, id , count(id) as total
+      FROM tmp
+      WHERE quantity > 2
+      GROUP BY name, id 
+      ORDER BY id) as t1,
+     (SELECT name, id , count(id) as total
+      FROM tmp
+      GROUP BY name, id
+      ORDER BY id) as t2
+WHERE  t1.id = t2.id AND t1.total = t2.total;
+
+--SELECT t1.name 
+-- FROM (SELECT o1.name, o1.id , count(o1.id) as total
+--      FROM (select tmp.name, tmp.id, ((unnest(tmp.items)).quantity)::int
+--                                          FROM tmp
+--                                          WHERE quantity > 2
+--                                          GROUP BY name, id 
+--                                          ORDER BY id)) as o1)as t1,
+--        (SELECT o2.name, o2.id , count(o2.id) as total
+--        FROM (select tmp.name, tmp.id, ((unnest(tmp.items)).quantity)::int
+--                                          FROM tmp  
+--                                          GROUP BY name, id 
+--                                          ORDER BY id) as o2) as t2
+--  WHERE t1.total = t2.total;
+
+
+
 
 -- (c) List the customers who have placed the most expensive order (to nd the cost of an order, you
 -- need to add up the cost of all items; the cost of each item is the price of that item times the
