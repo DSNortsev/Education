@@ -120,7 +120,7 @@ INSERT INTO xmldata (documents) VALUES (
      <item>
       <name>Synthetiser</name>
       <quantity>2</quantity>
-      <price>2,000</price>
+      <price>2000</price>
      </item>
    </items>     
  </order>
@@ -246,7 +246,7 @@ INSERT INTO xmldata (documents) VALUES (
      <item>
       <name>Electric Bass</name>
       <quantity>4</quantity>
-      <price>1,600</price>
+      <price>1600</price>
      </item>
      <item>
       <name>Microphone</name>
@@ -506,13 +506,20 @@ FROM (SELECT name, (unnest((unnest(orders)).items)).quantity
 WHERE t.quantity > 2;
 
 -- XMLTYPE
-WITH tmp as (SELECT *
-             FROM (SELECT (xpath('//Customer/Name/text()', customer_details))[1]::text AS NAME, unnest((xpath('//quantity/text()', customer_details))::text[]::int[]) AS quantity
-                   FROM customers_xml) as o1)
 
-SELECT DISTINCT name
-FROM tmp
-WHERE quantity > 2;
+--WITH tmp as (SELECT *
+--             FROM (SELECT (xpath('//Customer/Name/text()', customer_details))[1]::text AS NAME, unnest((xpath('//quantity/text()', customer_details))::text[]::int[]) AS quantity
+--                   FROM customers_xml) as o1)
+--
+--SELECT DISTINCT name
+--FROM tmp
+--WHERE quantity > 2;
+
+SELECT DISTINCT name 
+FROM (SELECT (xpath('//Customer/Name/text()', customer_details))[1]::text AS NAME, cast (unnest((xpath('//quantity/text()', customer_details))) as text) AS quantity  
+      FROM customers_xml) as o1
+WHERE quantity::int > '2';
+
 
 -- (b) List the names of customers who have placed an order where all the items in the order have
 -- quantity > 2.
@@ -564,7 +571,13 @@ WHERE  t1.id = t2.id AND t1.total = t2.total;
 --                                          ORDER BY id) as o2) as t2
 --  WHERE t1.total = t2.total;
 
+---XMLTYPE
 
+WITH tmp as (SELECT (xpath('//Customer/Name/text()', customer_details))[1]::text AS NAME, cast (unnest((xpath('//Orders/order', customer_details))) as xml) AS quantity 
+             FROM customers_xml)
+SELECT DISTINCT name FROM (SELECT name, cast (xpath('//quantity/text()', quantity) as text[])::int[] AS quantity 
+			   FROM tmp) as tmp1 
+WHERE NOT quantity && '{1,2}';
 
 
 -- (c) List the customers who have placed the most expensive order (to nd the cost of an order, you
@@ -594,3 +607,13 @@ FROM tmp
 GROUP BY name, id
 ORDER BY total DESC
 LIMIT 1;
+
+
+--- XMLTYPE
+-- DID NOT FIGURE OUT HOW TO MULTIPLE AND SUM TWO ARRAYS, WAS THINKING SOMETHING LIKE @* and then apply SUM finction 
+WITH tmp as (SELECT (xpath('//Customer/Name/text()', customer_details))[1]::text AS NAME, cast (unnest((xpath('//Orders/order', customer_details))) as xml) AS quantity
+             FROM customers_xml)
+
+SELECT name, cast (xpath('//quantity/text()', quantity) as text[])::int[] AS quantity, cast (xpath('//price/text()', quantity) as text[])::float[] AS price 
+FROM tmp;
+
