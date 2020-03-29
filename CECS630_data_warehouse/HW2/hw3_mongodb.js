@@ -2,9 +2,9 @@ use d0nort01;
 db.dropDatabase();
 use d0nort01;
 
+// TASK 1: Store this data in a MongoDB collection, call it Books.
 
-# TASK 1: Store this data in a MongoDB collection, call it Books.
-var books = [{"isbn":"846896359-3","title":"Jungle Book 2, The","price":22.05,"date":"12/28/2017","authors":[{"first":"Marlène","last":"Ashley","age":38},{"first":"Miléna","last":"Finley","age":37},{"first":"Stévina","last":"Bullus","age":44}],"publisher":{"name":"Youspan","address":{"street":"Iowa","number":"853","city":"München","country":"Germany"},"phone":"361-191-8111"}},
+var data = [{"isbn":"846896359-3","title":"Jungle Book 2, The","price":22.05,"date":"12/28/2017","authors":[{"first":"Marlène","last":"Ashley","age":38},{"first":"Miléna","last":"Finley","age":37},{"first":"Stévina","last":"Bullus","age":44}],"publisher":{"name":"Youspan","address":{"street":"Iowa","number":"853","city":"München","country":"Germany"},"phone":"361-191-8111"}},
 {"isbn":"558973823-7","title":"Star Trek III: The Search for Spock","price":36.58,"date":"4/19/2017","authors":[{"first":"Uò","last":"Ibel","age":26},{"first":"Mélys","last":"Grasner","age":36},{"first":"Mylène","last":"Laven","age":40},{"first":"Pò","last":"Lapsley","age":37}],"publisher":{"name":"Chatterbridge","address":{"street":"Dennis","number":"1","city":"São Tomé","country":"Sao Tome and Principe"},"phone":"845-226-0017"}},
 {"isbn":"411502148-9","title":"Verdict, The","price":18.1,"date":"10/3/2017","authors":[{"first":"Hélèna","last":"Broadist","age":52},{"first":"Loïs","last":"Mugleston","age":54},{"first":"Táng","last":"Mannock","age":14}],"publisher":{"name":"Youopia","address":{"street":"Londonderry","number":"9559","city":"‘Alīābād-e Katūl","country":"Iran"},"phone":"914-334-6703"}},
 {"isbn":"449293194-5","title":"Other Dream Team, The","price":23.83,"date":"2/6/2018","authors":[{"first":"Yè","last":"Gherardelli","age":33},{"first":"Rébecca","last":"Keiling","age":37}],"publisher":{"name":"Feedbug","address":{"street":"Declaration","number":"45583","city":"Pau","country":"Philippines"},"phone":"827-885-0741"}},
@@ -18,7 +18,7 @@ var books = [{"isbn":"846896359-3","title":"Jungle Book 2, The","price":22.05,"d
 {"isbn":"066401883-1","title":"Breaking the Rules","price":23.92,"date":"9/5/2017","authors":[{"first":"Börje","last":"Cowsby","age":12},{"first":"Maëlann","last":"Pipe","age":33},{"first":"Bérangère","last":"Orrill","age":37},{"first":"Sòng","last":"Aleksidze","age":35}],"publisher":{"name":"Dabtype","address":{"street":"Summerview","number":"9868","city":"Villa Allende","country":"Argentina"},"phone":"851-993-7571"}},
 {"isbn":"896697075-3","title":"Poolboy: Drowning Out the Fury","price":24.03,"date":"9/14/2017","authors":[{"first":"Bérénice","last":"Verbeke","age":43},{"first":"Miléna","last":"Tollit","age":40}],"publisher":{"name":"Zoombox","address":{"street":"Fairfield","number":"2338","city":"Gierałtowice","country":"Poland"},"phone":"276-635-4931"}},
 {"isbn":"701472917-9","title":"Gone","price":37.23,"date":"4/21/2017","authors":[{"first":"Lài","last":"Byre","age":45},{"first":"Estée","last":"Lewins","age":17}],"publisher":{"name":"DabZ","address":{"street":"Kings","number":"6296","city":"Gros Morne","country":"Haiti"},"phone":"333-130-0607"}},
-{"isbn":"23106:2899-9","title":"Jaguar","price":13.67,"date":"1/5/2018","authors":[{"first":"Fèi","last":"Meldon","age":41},{"first":"Adèle","last":"Pevreal","age":34},{"first":"Geneviève","last":"Allcock","age":49},{"first":"Mahélie","last":"Roglieri","age":39}],"publisher":{"name":"Quaxo","address":{"street":"Mcbride","number":"6443","city":"Batibati","country":"Indonesia"},"phone":"914-717-7049"}},
+{"isbn":"231062899-9","title":"Jaguar","price":13.67,"date":"1/5/2018","authors":[{"first":"Fèi","last":"Meldon","age":41},{"first":"Adèle","last":"Pevreal","age":34},{"first":"Geneviève","last":"Allcock","age":49},{"first":"Mahélie","last":"Roglieri","age":39}],"publisher":{"name":"Quaxo","address":{"street":"Mcbride","number":"6443","city":"Batibati","country":"Indonesia"},"phone":"914-717-7049"}},
 {"isbn":"478715173-8","title":"King Lear","price":38.37,"date":"4/8/2017","authors":[{"first":"Mélanie","last":"Reedman","age":40},{"first":"Marie-thérèse","last":"Mattei","age":51},{"first":"Miléna","last":"Leer","age":23},{"first":"Lóng","last":"Kimblin","age":40}],"publisher":{"name":"Ntag","address":{"street":"Rowland","number":"0","city":"Granja","country":"Portugal"},"phone":"640-921-0143"}},
 {"isbn":"373663171-5","title":"Life with Mikey","price":42.83,"date":"10/25/2017","authors":[{"first":"Táng","last":"Tawse","age":41},{"first":"Dafnée","last":"Ladon","age":56},{"first":"Gisèle","last":"Notman","age":23},{"first":"Léandre","last":"Naughton","age":54}],"publisher":{"name":"Thoughtblab","address":{"street":"Tony","number":"16","city":"Palmira","country":"Colombia"},"phone":"976-898-5812"}},
 {"isbn":"678179069-2","title":"For Ever Mozart","price":12.9,"date":"3/27/2018","authors":[{"first":"Personnalisée","last":"Baalham","age":22},{"first":"Camélia","last":"Rosendorf","age":42},{"first":"Zhì","last":"Osler","age":41}],"publisher":{"name":"Zava","address":{"street":"Banding","number":"9","city":"Hatton","country":"Sri Lanka"},"phone":"974-950-0698"}},
@@ -1005,20 +1005,23 @@ var books = [{"isbn":"846896359-3","title":"Jungle Book 2, The","price":22.05,"d
 {"isbn":"644453142-X","title":"a/k/a Tommy Chong","price":33.88,"date":"5/24/2017","authors":[{"first":"Åke","last":"Deane","age":40},{"first":"Vérane","last":"Keenan","age":42},{"first":"Marlène","last":"Carleton","age":27},{"first":"Laurène","last":"Tommis","age":50}],"publisher":{"name":"Plambee","address":{"street":"Anhalt","number":"1","city":"Midoun","country":"Tunisia"},"phone":"975-118-7352"}},
 {"isbn":"616955020-1","title":"Secret of Kells, The","price":22.49,"date":"2/22/2018","authors":[{"first":"Océane","last":"Ivashkov","age":25},{"first":"Célia","last":"Clucas","age":44},{"first":"Almérinda","last":"Salleir","age":30},{"first":"Aurélie","last":"Paike","age":51}],"publisher":{"name":"Thoughtstorm","address":{"street":"Towne","number":"4","city":"Paingar","country":"China"},"phone":"204-691-7328"}}]
 
-for (var i = 0, l = books.length; i < l; i++){ // for every book insert it in the collection
-    db.books.insert(books[i]); 
+for (var i = 0, l = data.length; i < l; i++){ // for every book insert it in the collection
+    db.books.insert(data[i]); 
 }
 
-# Task 2 : Write following queries in MongoDB:
-# (a)  List the title and price of books published in 2017 (any date in 2017) 
-#      with a price less than $20.Sort the result by price, from cheapest to most expensive.
+// Task 2 : Write following queries in MongoDB:
+//   (a)  List the title and price of books published in 2017 (any date in 2017) 
+//      with a price less than $20.Sort the result by price, from cheapest to most expensive.
 
+db.books.find({"date": { $regex: ".*/.*/2017"}, "price": {"$lt": 20}}, {"title": 1, "price": 1}).sort({"price":1}).pretty();
 
+// (b)  List the rst and last name of authors of books published by a German publisher
 
-# (b)  List the rst and last name of authors of books published by a German publisher.
+db.books.find({"publisher.address.country":"Germany"}, {"authors.first": 1, "authors.last": 1}).pretty();
 
+// (c)  List the name and city of publishers of books where all the authors are over the age of 35.
 
-# (c)  List the name and city of publishers of books where all the authors are over the age of 35.
+db.books.find({"authors.age" : {"$not": {"$lt": 35} }}, {"publisher.name": 1, "publisher.address.city": 1}).pretty();
 
-
-# (d)  List the title and publisher names for books with more than 2 authors.
+// (d)  List the title and publisher names for books with more than 2 authors.
+db.books.find( {'authors': {$exists:true}, $where:'this.authors.length>1'}, {'title': 1, 'publisher.name':1}).pretty();
