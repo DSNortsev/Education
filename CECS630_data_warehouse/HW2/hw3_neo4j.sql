@@ -13,9 +13,10 @@
 
 -- 1. Copy BOOKSDATA.json to project_database/import directory
 -- 2. Load data from json file 
+
 WITH "BOOKSDATA.json" AS data
 CALL apoc.load.json(data) YIELD value
-MERGE (book:BOOK {isbn:value.isbn}) ON CREATE
+MERGE (book:Book {isbn:value.isbn}) ON CREATE
   SET book.title = value.title, book.price = value.price, book.date = value.date
 
 MERGE (publisher:Publisher {name:value.publisher.name, city:value.publisher.address.city}) ON CREATE
@@ -33,36 +34,30 @@ FOREACH (a IN value.authors |
 	MERGE (author)-[:Author_of]->(book)
 )
 
+-- (a) List the title and price of books published in 2017 (any date in 2017) with a price less than $20.
+--     Sort the result by price, from cheapest to most expensive.
 
+MATCH (:Publisher)-[:Publisher_of]->(b:Book)
+WHERE b.date ENDS WITH "2017" AND b.price < 20
+RETURN b.title, b.price
+ORDER BY b.price
 
+-- (b) List the first and last name of authors of books published by a German publisher.
 
+MATCH (p:Publisher)-[:Publisher_of]->(:Book)<-[:Author_of]-(a:Author)
+WHERE p.country = 'Germany'
+RETURN a.first_name, a.last_name
 
-UNWIND value.authors as a
-MERGE (author:Author {first_name:a.`first-name`, last_name:a.`last-name`}) ON CREATE
- SET author.age = a.age
-MERGE (author)-[:Author_of]->(book)
+-- (c) List the name and city of publishers of books where all the authors are over the age of 35.
 
+MATCH (p:Publisher)-[:Publisher_of]->(b:Book)<-[:Author_of]-(a:Author)
+WITH p , b , collect(a.age) as array_of_ages
+WHERE ALL ( age in array_of_ages  WHERE age > 35)
+RETURN p.name, p.city
 
+-- (d) List the title and publisher names for books with more than 2 authors.
 
-
-
-FOREACH (a IN value.author |
-	MERGE (author:Author {first_name = a.first-name, last-name = a.last-name}) ON CREATE
- 	 SET author.age = a.age
-	MERGE (author)-[:Author-of]->(book)
-)
-
-
-MATCH (n)
-DETACH DELETE n
-
-
-
-MERGE (publisher:Publisher {name:value.publisher.name, }) ON CREATE
- SET publisher.address = value.publisher.street-number
- 	 + " "
- 	 + value.publisher.street-name 
- 	 + ","
- 	 + value.publisher.city, 
- 	 publisher.country = value.publisher.country,
- 	 publisher.phone = value.publisher.ph
+MATCH (p:Publisher)-[:Publisher_of]->(b:Book)<-[:Author_of]-(a:Author)
+WITH p , b , count(a) as count
+WHERE count > 2
+RETURN b.title, p.name

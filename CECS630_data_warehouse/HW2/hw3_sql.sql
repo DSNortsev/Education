@@ -1141,6 +1141,7 @@ SELECT jsonparser();
 -- TASk 5. Repeat the queries in these tables in SQL.
 -- (a) List the title and price of books published in 2017 (any date in 2017) with a price less than $20.
 --     Sort the result by price, from cheapest to most expensive.
+
 SELECT title, price 
 FROM book 
 WHERE  EXTRACT(year FROM "date") = 2017 AND price < 20
@@ -1157,14 +1158,6 @@ WHERE publisher.name = book.publisher
 
 
 -- (c) List the name and city of publishers of books where all the authors are over the age of 35.
-
-
--- SElECT DISTINCT publisher.name, publisher.city
--- FROM publisher, book, author 
--- WHERE publisher.name = book.publisher 
--- 	AND publisher.city = book.city 
--- 	AND author.isbn = book.isbn 
--- 	AND author.age > 35;
 
 WITH tmp AS (SELECT t1.isbn
              FROM (SELECT isbn, count(isbn) FROM author GROUP BY isbn) as t1,
