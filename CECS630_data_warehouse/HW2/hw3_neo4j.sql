@@ -51,13 +51,13 @@ RETURN a.first_name, a.last_name
 -- (c) List the name and city of publishers of books where all the authors are over the age of 35.
 
 MATCH (p:Publisher)-[:Publisher_of]->(b:Book)<-[:Author_of]-(a:Author)
-WITH p , b , collect(a.age) as array_of_ages
+WITH p, b, collect(a.age) as array_of_ages
 WHERE ALL ( age in array_of_ages  WHERE age > 35)
 RETURN p.name, p.city
 
 -- (d) List the title and publisher names for books with more than 2 authors.
 
 MATCH (p:Publisher)-[:Publisher_of]->(b:Book)<-[:Author_of]-(a:Author)
-WITH p , b , count(a) as count
+WITH p, b, count(a) as count
 WHERE count > 2
 RETURN b.title, p.name
