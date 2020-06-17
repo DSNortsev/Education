@@ -60,20 +60,6 @@ class Trie{
     insert(child,word.substr(1));
   }
 
-  // bool lookup(TrieNode* root, string word){
-  //   // Base case when reaches 0 size
-  //   if(word.size()==0){
-  //     return root->completed_word;
-  //   }
-  //   int index = word[0] - ' ';
-  //   // int index = word[0];
-  //   TrieNode* child = root->child_node[index];
-
-  //   if(child!=NULL){
-  //     return lookup(child,word.substr(1));
-  //   }
-  //   return false;
-  // }
 
   int getTotalWords() {
     return total_words;
@@ -93,144 +79,41 @@ class Trie{
     return total;
   }
 
-// void remove(TrieNode* root, string word){
-//   // Base case 
-//   if(word.size()==0){
-//     if(root->completed_word == true){
-//       total_words -= 1;
-//     }
-//     root->completed_word = false;
-//     return;
-//   }
 
-//   int index = word[0]- ' ';
-//   // int index = word[0];
-//   TrieNode* child = root->child_node[index];
+  void insert(string word){
+    insert(root,word);
+  }
 
-//   if(child != NULL){
-//     remove(child, word.substr(1));
-//     if(child->completed_word == false){
-//       for(int i=0;i<TOTAL_SIZE;i++){
-//         if(child->child_node[i]!=NULL){
-//           return;
-//           }
-//       }
-//       delete child;
-//       root->child_node[index] = NULL;
-//     }
-//   }
-// }
-
-
-  // void alphabetical(TrieNode* root, string word){
-  //   // Base case when completed_word is set to True
-  //   if(root->completed_word){
-  //     cout << word << endl;
-  //     }
-    
-  //   for(int i=0;i<TOTAL_SIZE;i++){
-  //     TrieNode* child = root->child_node[i];
-  //     char character = i + ' ';
-  //     // char character = i;
-  //     if(child!=NULL){
-  //       alphabetical(child,word+character);
-  //     }
-  //   }
-  // }
-
-// void alphabetical(TrieNode* root, string word, bool initial = false){
-//   // Base case when completed_word is set to True
-//   if(root->completed_word){
-//     cout << word << endl;
-//   }
-
-//   if(initial){
-//     int index = word[0] - ' ';
-//     TrieNode* child = root->child_node[index];
-//     // char character = i;
-//     if(child!=NULL){
-//       alphabetical(child,word);
-//       }
-//   }else{ 
-//   for(int i=0;i<TOTAL_SIZE;i++){
-//     TrieNode* child = root->child_node[i];
-//     char character = i + ' ';
-//     // char character = i;
-//     if(child!=NULL){
-//       alphabetical(child,word+character);
-//       }
-//     }
-//   }
-// }
-
-void insert(string word){
-  insert(root,word);
-}
-
-  // void remove(string word){
-  //   remove(root,word);
-  // }
-
-  // bool lookup(string word){
-  //   return lookup(root,word);
-  // }
 
   void info(){
     cout << "Total nodes in the trie: " << getTotalNodes(root) << endl;
     cout << "Total inserted words: " << total_words << endl;
-}
+  }
 
-  // void alphabetical(){
-  //   alphabetical(root,"");
-  // }
 
-// void print(TrieNode* root, string output, int depth){
-//   if(root==NULL){
-//     return;
-//     }
+  void printAutoSuggestion(TrieNode* root, string output, int &TOTAL_SUGGESTION){
 
-//   if(root->completed_word==true){
-//     cout << output << endl;
-//     }
-//   // Terminate if it reached the maximum depth
-//   if(depth==0){
-//     return;
-//     }
-
-//   for(int i=0;i<TOTAL_SIZE;i++){
-//     // print start with a
-//     // char ch = i+97;
-//      char ch = i + ' ';
-//     TrieNode* child = root->child_node[i];
+    if(root==NULL){
+      return;
+    }
+    // Terminate if it reached the maximum suggestions 
+    if(TOTAL_SUGGESTION == 0){
+      return;
+    }
     
-//     print(child,output+ch,depth-1);
-//     }
-// }
+    if(root->completed_word==true){
+      cout << output << endl;
+      TOTAL_SUGGESTION -= 1;
+    }
 
 
-void printAutoSuggestion(TrieNode* root, string output, int &TOTAL_SUGGESTION){
-
-  if(root==NULL){
-    return;
+    for(int i=0;i<TOTAL_SIZE;i++){
+      // print start with space in ASCII which is 32
+      char character = i + ' ';
+      TrieNode* child = root->child_node[i];
+      printAutoSuggestion(child,output+character,TOTAL_SUGGESTION);
+    } 
   }
-   // Terminate if it reached the maximum suggestions 
-  if(TOTAL_SUGGESTION == 0){
-    return;
-  }
-  
-  if(root->completed_word==true){
-    cout << output << endl;
-    TOTAL_SUGGESTION -= 1;
-  }
-
-
-  for(int i=0;i<TOTAL_SIZE;i++){
-    // print start with space in ASCII which is 32
-    char character = i + ' ';
-    TrieNode* child = root->child_node[i];
-    printAutoSuggestion(child,output+character,TOTAL_SUGGESTION);
-  } 
-}
 
 
   void autocomplete(string prefix){
@@ -284,20 +167,6 @@ void printAutoSuggestion(TrieNode* root, string output, int &TOTAL_SUGGESTION){
     inFile.close();
   }
 
-// bool char_check(string word) { 
-//   for(int i=0;i<word.length();i++){
-//     // if ((word[i]>=48 && word[i]<=57)||
-//     //     (word[i]>=65 && word[i]<=90)||
-//     //     (word[i]>=97 && word[i]<=122))
-        
-//     if(word[i]>=97 && word[i]<=122) {
-//           continue;
-//     } else {
-//       return false;
-//     }
-//   }
-//   return true;
-// }
 
 void prompt(Trie tree){
   string prefix; 
