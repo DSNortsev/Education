@@ -71,8 +71,144 @@ void read_pids_from_file(vector <proccess> &jobs, string file_name){
 int main(int argc, const char * argv[]){
 	
   //Creating a vector of proccesses
-	vector <proccess> jobs;
-  read_pids_from_file(jobs, "job.txt");
+	// vector <proccess> jobsQueue;
+  vector <proccess> waitingQueue;
+  vector <proccess> readyQueue;
+
+  int quantumTime = 5;
+  int runQuantumTime = 0;
+  int totalProcessedJobs = 0; 
+  int runningTime = 0;
+  int jobCounts = 1;
+  // bool isIdle = true;	
+  int scheduledTime; 
+
+  read_pids_from_file(waitingQueue, "job.txt");
+  // int totalJobs = jobsQueue.size();
+  // vector <proccess> waitingQueue = jobsQueue;
+
+  cout << waitingQueue.size()<< endl;
+  cout << readyQueue.size()<< endl;
+
+  while (waitingQueue.size() > 0 || readyQueue.size() > 0){
+    cout << "Runtime: "<<runningTime<< endl;
+    if (waitingQueue.size() > 0 && waitingQueue.front().arrivalTime <= runningTime){
+    
+      if (waitingQueue.front().burstTime <= 0){
+        waitingQueue.erase(waitingQueue.begin());
+        continue;
+      }
+      readyQueue.push_back(waitingQueue.front());
+      waitingQueue.erase(waitingQueue.begin());
+    }
+
+    if (readyQueue.size() > 0){
+      if (readyQueue.front().burstTime >= quantumTime && runQuantumTime == 0){
+        scheduledTime = quantumTime;
+      }else if (readyQueue.front().burstTime < quantumTime && runQuantumTime == 0){
+        scheduledTime = readyQueue.front().burstTime;
+        runQuantumTime =  quantumTime -  scheduledTime;
+      }else{
+        if (readyQueue.front().burstTime >= runQuantumTime ){
+          scheduledTime = runQuantumTime;
+          runQuantumTime = 0;
+        }else{
+          scheduledTime = readyQueue.front().burstTime;
+          runQuantumTime -= readyQueue.front().burstTime;
+        }
+      }
+      
+      cout << "Job " << readyQueue.front().PID << ", scheduled for " << scheduledTime <<  "ms" <<endl;
+
+      readyQueue.front().burstTime -= scheduledTime;
+      runningTime += scheduledTime;
+
+
+      if (readyQueue.front().burstTime > 0){
+        readyQueue.push_back(readyQueue.front());
+      }
+      readyQueue.erase(readyQueue.begin());
+
+    }else{
+      cout << quantumTime << ',' << "CPU is Idle" << endl;
+      runningTime += quantumTime;     
+    }
+  }
+  // cout << waitingQueue.front().burstTime<< endl;
+  // cout << waitingQueue.size()<< endl;
+}
+
+
+
+
+  
+
+
+
+
+
+  //       if (jobs[i].burstTime >= quantumTime && runQuantumTime == 0){
+  //         scheduledTime = quantumTime;
+  //       }if else(jobs[i].burstTime <= quantumTime && runQuantumTime == 0){
+  //         scheduledTime = burstTime; 
+  //       }else{
+  //         if (jobs[i].burstTime >= runQuantumTime ){
+  //           scheduledTime = runQuantumTime;
+  //           runQuantumTime = 0;
+  //         }else{
+  //           scheduledTime = jobs[i].burstTime;
+  //           runQuantumTime - = jobs[i].burstTime;
+  //         }
+  //       }
+  // }
+
+  // while (totalProcessedJobs != totalJobs){
+  //   isIdle = true;
+  //   for (int i = 0; i < totalJobs; i++){
+
+  //     if (jobs[i].arrivalTime <= runningTime && jobs[i].burstTime > 0){
+
+  //       if (jobs[i].burstTime >= quantumTime && runQuantumTime == 0){
+  //         scheduledTime = quantumTime;
+  //       }if else(jobs[i].burstTime <= quantumTime && runQuantumTime == 0){
+  //         scheduledTime = burstTime; 
+  //       }else{
+  //         if (jobs[i].burstTime >= runQuantumTime ){
+  //           scheduledTime = runQuantumTime;
+  //           runQuantumTime = 0;
+  //         }else{
+  //           scheduledTime = jobs[i].burstTime;
+  //           runQuantumTime - = jobs[i].burstTime;
+  //         }
+  //       }
+
+
+  //       cout << "Job " << jobs[i].PID << ", scheduled for " << scheduledTime <<  "ms" <<endl;
+
+  //       // jobs[i].burstTime = jobs[i].burstTime - quantum;
+  //       // running_Time = running_Time + quantum
+  //       jobs[i].burstTime -= scheduledTime;
+  //       running_Time += scheduledTime;
+  //       // quantum_Number++;
+
+  //       isIdle = false;
+
+  //       if (jobs[i].burst_Time <= 0)
+  //         totalProcessedJobs++;	//Increment size by one
+  //     } else {
+  //       break; // All jobs are ariving later than
+  //     }
+  //   }
+
+  //   if (isIdle){
+  //     cout << quantum_Number << ',' << "CPU is Idle" << endl;
+  //     // quantum_Number++;
+  //     // running_Time = running_Time + quantum;
+  //     running_Time += quantumTime;
+  //   }
+  // }
+
+
 
   // ifstream          inFile;
   // // open the file stream
@@ -126,9 +262,13 @@ int main(int argc, const char * argv[]){
   // //   cout << "\nProcess ID: " << job.PID << "\nArrival Time: " <<
   // //   job.arrivalTime
   // //   <<  "\nBurst Time: " << job.burstTime <<endl;
-    cout <<jobs.front().burstTime<< endl;
-    cout << jobs.size()<< endl;
-}
+//     cout << jobsQueue.back().burstTime<< endl;
+//     cout << jobsQueue.size()<< endl;
+//     cout << waitingQueue.back().burstTime<< endl;
+//     cout << waitingQueue.size()<< endl;
+//     vector <proccess> test;
+//     cout << test.size()<< endl;
+// }
 
 
 
