@@ -64,10 +64,10 @@ void read_pids_from_file(vector <proccess> &jobs, string file_name){
     }
     // Append processes to wait queue 
     jobs.push_back(P);
-    cout << "\nProcess ID: " << P.PID << "\nArrival Time: " <<P.arrivalTime
-    <<  "\nBurst Time: " << P.burstTime <<endl;
+    // cout << "\nProcess ID: " << P.PID << "\nArrival Time: " <<P.arrivalTime
+    // <<  "\nBurst Time: " << P.burstTime <<endl;
 
-    std::cout << "Line Finished" << std::endl;
+    // std::cout << "Line Finished" << std::endl;
   }
   // close the file stream
   inFile.close();
@@ -83,15 +83,15 @@ int main(int argc, const char * argv[]){
   
 
   for ( int i = 0; i < TOTAL_CPUS; i++ ) {
-    cout << i << endl;
+    // cout << i << endl;
     cpu_struct C;
     cpuProcesses[i]=C;
    }
 
-  for ( int i = 0; i < TOTAL_CPUS; i++ ) {
-    cout << "i = " << i << cpuProcesses[i].readyQueue.size() << endl;
-   }
-  cout << "ARRAY SIZE: " << sizeof(cpuProcesses)/sizeof(cpuProcesses[0]) << endl;
+  // for ( int i = 0; i < TOTAL_CPUS; i++ ) {
+  //   cout << "i = " << i << cpuProcesses[i].readyQueue.size() << endl;
+  //  }
+  // cout << "ARRAY SIZE: " << sizeof(cpuProcesses)/sizeof(cpuProcesses[0]) << endl;
    
    
 
@@ -109,7 +109,7 @@ int main(int argc, const char * argv[]){
   // int totalJobs = jobsQueue.size();
   // vector <proccess> waitingQueue = jobsQueue;
 
-  cout << waitingQueue.size()<< endl;
+  // cout << waitingQueue.size()<< endl;
   // cout << readyQueue_new.size()<< endl;
 
   //  while (waitingQueue.size() > 0 || sizeof(cpuProcesses)/sizeof(cpuProcesses[0]) > 0){
@@ -120,7 +120,7 @@ int main(int argc, const char * argv[]){
     array_size = sizeof(cpuProcesses)/sizeof(cpuProcesses[0]);
 
     for ( int i = 0; i < array_size; i++ ){
-      cout << "Runtime: "<<runningTime<< endl;
+      // cout << "Runtime: "<<runningTime<< endl;
       if (waitingQueue.size() > 0 && waitingQueue.front().arrivalTime <= runningTime){
       
         if (waitingQueue.front().burstTime <= 0){
@@ -146,12 +146,15 @@ int main(int argc, const char * argv[]){
             cpuProcesses[i].runQuantumTime -= cpuProcesses[i].readyQueue.front().burstTime;
           }
         }
-        
-        cout << "Process #: " << i + 1 << ", " <<"Job " << cpuProcesses[i].readyQueue.front().PID << ", scheduled for " << scheduledTime <<  "ms" <<endl;
 
         cpuProcesses[i].readyQueue.front().burstTime -= scheduledTime;
         runningTime += scheduledTime;
 
+        if (cpuProcesses[i].readyQueue.front().burstTime > 0){ 
+          cout << "Process #: " << i + 1 << " Job " << cpuProcesses[i].readyQueue.front().PID << ", scheduled for " << scheduledTime <<  "ms" <<endl;
+        }else{
+          cout << "Process #: " << i + 1 << " Job " << cpuProcesses[i].readyQueue.front().PID << ", scheduled for " << scheduledTime <<  "ms, completed" <<endl;
+        }
 
         if (cpuProcesses[i].readyQueue.front().burstTime > 0){
           cpuProcesses[i].readyQueue.push_back(cpuProcesses[i].readyQueue.front());
@@ -159,7 +162,7 @@ int main(int argc, const char * argv[]){
         cpuProcesses[i].readyQueue.erase(cpuProcesses[i].readyQueue.begin());
 
       }else{
-        cout << "Process #: " << i + 1  << ", " << quantumTime << ',' << "CPU is Idle" << endl;
+        cout << "Process #: " << i + 1  << ", " << quantumTime << ',' << " CPU is Idle" << endl;
         runningTime += quantumTime;     
       }
     }
