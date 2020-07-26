@@ -3,6 +3,9 @@
 import sys
 import re
 
+'''
+   Script accepts the follwing intervals format: "{8,10},{2,6},{1,3},{15,18}"
+'''
 
 def sort_merge_intevals(intervals):
   sorted_intervals = sorted( intervals, key=lambda x: x[0])
